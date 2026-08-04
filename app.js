@@ -238,6 +238,9 @@ window.onload = () => {
     setLiveDate();
     loadKelas();
 };
+// ==========================================
+// FUNGSI REKAP LENGKAP & EXPORT EXCEL
+// ==========================================
 async function loadRekapData() {
     const idKelas = document.getElementById('global-kelas').value;
     if (!idKelas) return alert("Pilih kelas di atas dulu!");
@@ -250,13 +253,15 @@ async function loadRekapData() {
         if(json.status === "success") {
             const allPresensi = json.data.presensi;
             const allMaju = json.data.nilaiMaju;
+            const allTugasUh = json.data.tugasUh;
 
-            // 1. Render Rekap Presensi
+            // ------------------------------------------
+            // 1. RENDER REKAP PRESENSI (Realtime Harian)
+            // ------------------------------------------
             const tbodyPresensi = document.getElementById('table-rekap-presensi');
             tbodyPresensi.innerHTML = '';
 
             globalStudents.forEach(siswa => {
-                // Hitung jumlah H/S/I/A/R per siswa
                 const presensiSiswa = allPresensi.filter(p => String(p.id_siswa) === String(siswa.id_siswa));
                 const count = { H: 0, S: 0, I: 0, A: 0, R: 0 };
                 presensiSiswa.forEach(p => {
@@ -275,7 +280,9 @@ async function loadRekapData() {
                 `;
             });
 
-            // 2. Render Rekap Nilai Maju
+            // ------------------------------------------
+            // 2. RENDER REKAP NILAI MAJU (Akumulasi Total)
+            // ------------------------------------------
             const tbodyMaju = document.getElementById('table-rekap-maju');
             tbodyMaju.innerHTML = '';
 
@@ -290,6 +297,54 @@ async function loadRekapData() {
                     </tr>
                 `;
             });
+
+            // ------------------------------------------
+            // 3. RENDER REKAP TUGAS & UH (Dijejer Berdasarkan Tanggal)
+            // ------------------------------------------
+            const headerTugaUh = document.getElementById('header-rekap-tugauh');
+            const tbodyTugaUh = document.getElementById('table-rekap-tugauh');
+            
+            // Filter nilai sesuai kelas aktif
+            const nilaiKelas = allTugasUh.filter(n => String(n.id_kelas) === String(idKelas));
+
+            // Ambil daftar unik item penilaian (Gabungan Nama Penilaian & Tanggal)
+            const itemPenilaianMap = {};
+            nilaiKelas.forEach(n => {
+                // Key unik berdasarkan Jenis - Judul (Tanggal)
+                const tglFormat = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : '';
+                const key = `${n.jenis}: ${n.nama_penilaian} (${tglFormat})`;
+                itemPenilaianMap[key] = true;
+            });
+
+            const daftarItem = Object.keys(itemPenilaianMap);
+
+            // Render Header Kolom Dinamis
+            headerTugaUh.innerHTML = `<th class="p-2 min-w-[120px]">Nama</th>`;
+            daftarItem.forEach(item => {
+                headerTugaUh.innerHTML += `<th class="p-2 text-center min-w-[90px] bg-blue-50/50">${item}</th>`;
+            });
+
+            // Render Baris Nilai Per Siswa
+            tbodyTugaUh.innerHTML = '';
+            globalStudents.forEach(siswa => {
+                let rowHtml = `<tr class="border-b hover:bg-gray-50"><td class="p-2 font-medium text-gray-800 truncate max-w-[120px]">${siswa.nama_siswa}</td>`;
+                
+                daftarItem.forEach(itemKey => {
+                    // Cari nilai siswa untuk item ini
+                    const record = nilaiKelas.find(n => {
+                        const tglFormat = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : '';
+                        const key = `${n.jenis}: ${n.nama_penilaian} (${tglFormat})`;
+                        return String(n.id_siswa) === String(siswa.id_siswa) && key === itemKey;
+                    });
+
+                    const nilaiVal = record && record.nilai !== "" ? record.nilai : "-";
+                    rowHtml += `<td class="p-2 text-center font-semibold text-gray-700">${nilaiVal}</td>`;
+                });
+
+                rowHtml += `</tr>`;
+                tbodyTugaUh.innerHTML += rowHtml;
+            });
+
         }
     } catch (e) {
         alert("Gagal memuat data rekap.");
@@ -297,6 +352,29 @@ async function loadRekapData() {
     showLoading(false);
 }
 
+// ------------------------------------------
+// FUNGSI EXPORT TIGA REKAP KE EXCEL (.XLSX)
+// ------------------------------------------
+function exportToExcel() {
+    const idKelas = document.getElementById('global-kelas').value || "Kelas";
+    const wb = XLSX.utils.book_new();
+
+    // 1. Sheet Presensi
+    const wsPresensi = XLSX.utils.table_to_sheet(document.getElementById('table-presensi-export'));
+    XLSX.utils.book_append_sheet(wb, wsPresensi, "Rekap Kehadiran");
+
+    // 2. Sheet Nilai Maju
+    const wsMaju = XLSX.utils.table_to_sheet(document.getElementById('table-maju-export'));
+    XLSX.utils.book_append_sheet(wb, wsMaju, "Nilai Maju");
+
+    // 3. Sheet Tugas & UH
+    const wsTugas = XLSX.utils.table_to_sheet(document.getElementById('table-tugauh-export'));
+    XLSX.utils.book_append_sheet(wb, wsTugas, "Tugas & UH");
+
+    // Download File .xlsx
+    const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+}
 // Otomatis load rekap saat tab Rekap diklik
 const originalSwitchTab = switchTab;
 switchTab = function(tabId) {
