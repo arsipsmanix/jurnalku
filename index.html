@@ -146,20 +146,25 @@
             </div>
         </section>
 
-        <!-- SEKSI REKAP -->
-<section id="rekap" class="p-5 hide-section">
-    <div class="flex items-center justify-between mb-4">
+<!-- SEKSI REKAP -->
+<section id="rekap" class="p-5 hide-section pb-20">
+    <div class="flex items-center justify-between mb-4 gap-2">
         <h2 class="text-lg font-bold text-gray-800">Rekapitulasi Data</h2>
-        <button onclick="loadRekapData()" class="bg-purple-600 active:bg-purple-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
-            <i class="fas fa-sync-alt mr-1"></i> Refresh
-        </button>
+        <div class="flex gap-2">
+            <button onclick="loadRekapData()" class="bg-purple-600 active:bg-purple-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button onclick="exportToExcel()" class="bg-emerald-600 active:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1">
+                <i class="fas fa-file-excel text-sm"></i> Export Excel
+            </button>
+        </div>
     </div>
 
-    <!-- Container Rekap Presensi -->
+    <!-- 1. Rekap Kehadiran -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
         <h3 class="font-bold text-gray-700 text-sm mb-3"><i class="fas fa-user-check text-green-500 mr-2"></i>Rekap Kehadiran Siswa</h3>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse">
+            <table id="table-presensi-export" class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr class="bg-gray-50 border-b text-gray-600">
                         <th class="p-2">Nama</th>
@@ -171,17 +176,17 @@
                     </tr>
                 </thead>
                 <tbody id="table-rekap-presensi">
-                    <tr><td colspan="6" class="p-3 text-center text-gray-400">Pilih kelas di atas lalu klik Refresh.</td></tr>
+                    <tr><td colspan="6" class="p-3 text-center text-gray-400">Pilih kelas lalu klik Refresh.</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Container Rekap Nilai Maju -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <!-- 2. Rekap Nilai Maju -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
         <h3 class="font-bold text-gray-700 text-sm mb-3"><i class="fas fa-bolt text-amber-500 mr-2"></i>Total Poin Nilai Maju</h3>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse">
+            <table id="table-maju-export" class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr class="bg-gray-50 border-b text-gray-600">
                         <th class="p-2">Nama</th>
@@ -189,13 +194,30 @@
                     </tr>
                 </thead>
                 <tbody id="table-rekap-maju">
-                    <tr><td colspan="2" class="p-3 text-center text-gray-400">Pilih kelas di atas lalu klik Refresh.</td></tr>
+                    <tr><td colspan="2" class="p-3 text-center text-gray-400">Pilih kelas lalu klik Refresh.</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
-</section>
-    </main>
+
+    <!-- 3. Rekap Tugas & UH (Dijejer Berdasarkan Tanggal) -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-700 text-sm mb-3"><i class="fas fa-tasks text-blue-500 mr-2"></i>Rekap Tugas & Ulangan Harian</h3>
+        <div class="overflow-x-auto">
+            <table id="table-tugauh-export" class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr id="header-rekap-tugauh" class="bg-gray-50 border-b text-gray-600">
+                        <th class="p-2 min-w-[120px]">Nama</th>
+                        <!-- Kolom Tugas & UH akan otomatis dijejer di sini via JS -->
+                    </tr>
+                </thead>
+                <tbody id="table-rekap-tugauh">
+                    <tr><td class="p-3 text-center text-gray-400">Pilih kelas lalu klik Refresh.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>    </main>
     <!-- Bottom Navigation Mobile -->
     <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-20">
         <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center text-blue-600 w-1/4">
