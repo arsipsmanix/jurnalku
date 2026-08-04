@@ -288,12 +288,37 @@ async function loadRekapData() {
         const json = await res.json();
         
         if(json.status === "success") {
-            const allPresensi = json.data.presensi;
-            const allMaju = json.data.nilaiMaju;
-            const allTugasUh = json.data.tugasUh;
+            const allJurnal = json.data.jurnal || [];
+            const allPresensi = json.data.presensi || [];
+            const allMaju = json.data.nilaiMaju || [];
+            const allTugasUh = json.data.tugasUh || [];
 
             // ------------------------------------------
-            // 1. RENDER REKAP PRESENSI (Realtime Harian)
+            // 0. RENDER REKAP MATERI (Tampil Paling Atas)
+            // ------------------------------------------
+            const tbodyMateri = document.getElementById('table-rekap-materi');
+            tbodyMateri.innerHTML = '';
+
+            const jurnalKelas = allJurnal.filter(j => String(j.id_kelas) === String(idKelas));
+
+            if (jurnalKelas.length === 0) {
+                tbodyMateri.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-gray-400">Belum ada entri jurnal materi untuk kelas ini.</td></tr>`;
+            } else {
+                jurnalKelas.forEach(j => {
+                    const tglFormat = j.tanggal ? new Date(j.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-';
+                    tbodyMateri.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-2 font-medium text-gray-700 whitespace-nowrap">${tglFormat}</td>
+                            <td class="p-2 text-center font-semibold text-indigo-600 whitespace-nowrap">${j.jam_ke || '-'}</td>
+                            <td class="p-2 font-bold text-gray-800">${j.materi_tp || '-'}</td>
+                            <td class="p-2 text-gray-600">${j.aktivitas || '-'}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // ------------------------------------------
+            // 1. RENDER REKAP PRESENSI
             // ------------------------------------------
             const tbodyPresensi = document.getElementById('table-rekap-presensi');
             tbodyPresensi.innerHTML = '';
@@ -318,7 +343,7 @@ async function loadRekapData() {
             });
 
             // ------------------------------------------
-            // 2. RENDER REKAP NILAI MAJU (Akumulasi Total)
+            // 2. RENDER REKAP NILAI MAJU
             // ------------------------------------------
             const tbodyMaju = document.getElementById('table-rekap-maju');
             tbodyMaju.innerHTML = '';
@@ -336,18 +361,15 @@ async function loadRekapData() {
             });
 
             // ------------------------------------------
-            // 3. RENDER REKAP TUGAS & UH (Dijejer Berdasarkan Tanggal)
+            // 3. RENDER REKAP TUGAS & UH
             // ------------------------------------------
             const headerTugaUh = document.getElementById('header-rekap-tugauh');
             const tbodyTugaUh = document.getElementById('table-rekap-tugauh');
             
-            // Filter nilai sesuai kelas aktif
             const nilaiKelas = allTugasUh.filter(n => String(n.id_kelas) === String(idKelas));
 
-            // Ambil daftar unik item penilaian (Gabungan Nama Penilaian & Tanggal)
             const itemPenilaianMap = {};
             nilaiKelas.forEach(n => {
-                // Key unik berdasarkan Jenis - Judul (Tanggal)
                 const tglFormat = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : '';
                 const key = `${n.jenis}: ${n.nama_penilaian} (${tglFormat})`;
                 itemPenilaianMap[key] = true;
@@ -355,19 +377,16 @@ async function loadRekapData() {
 
             const daftarItem = Object.keys(itemPenilaianMap);
 
-            // Render Header Kolom Dinamis
             headerTugaUh.innerHTML = `<th class="p-2 min-w-[120px]">Nama</th>`;
             daftarItem.forEach(item => {
                 headerTugaUh.innerHTML += `<th class="p-2 text-center min-w-[90px] bg-blue-50/50">${item}</th>`;
             });
 
-            // Render Baris Nilai Per Siswa
             tbodyTugaUh.innerHTML = '';
             globalStudents.forEach(siswa => {
                 let rowHtml = `<tr class="border-b hover:bg-gray-50"><td class="p-2 font-medium text-gray-800 truncate max-w-[120px]">${siswa.nama_siswa}</td>`;
                 
                 daftarItem.forEach(itemKey => {
-                    // Cari nilai siswa untuk item ini
                     const record = nilaiKelas.find(n => {
                         const tglFormat = n.tanggal ? new Date(n.tanggal).toLocaleDateString('id-ID', {day:'numeric', month:'short'}) : '';
                         const key = `${n.jenis}: ${n.nama_penilaian} (${tglFormat})`;
@@ -390,21 +409,25 @@ async function loadRekapData() {
 }
 
 // ------------------------------------------
-// FUNGSI EXPORT TIGA REKAP KE EXCEL (.XLSX)
+// FUNGSI EXPORT EMPAT REKAP KE EXCEL (.XLSX)
 // ------------------------------------------
 function exportToExcel() {
     const idKelas = document.getElementById('global-kelas').value || "Kelas";
     const wb = XLSX.utils.book_new();
 
-    // 1. Sheet Presensi
+    // 1. Sheet Jurnal Materi
+    const wsMateri = XLSX.utils.table_to_sheet(document.getElementById('table-materi-export'));
+    XLSX.utils.book_append_sheet(wb, wsMateri, "Jurnal Materi");
+
+    // 2. Sheet Presensi
     const wsPresensi = XLSX.utils.table_to_sheet(document.getElementById('table-presensi-export'));
     XLSX.utils.book_append_sheet(wb, wsPresensi, "Rekap Kehadiran");
 
-    // 2. Sheet Nilai Maju
+    // 3. Sheet Nilai Maju
     const wsMaju = XLSX.utils.table_to_sheet(document.getElementById('table-maju-export'));
     XLSX.utils.book_append_sheet(wb, wsMaju, "Nilai Maju");
 
-    // 3. Sheet Tugas & UH
+    // 4. Sheet Tugas & UH
     const wsTugas = XLSX.utils.table_to_sheet(document.getElementById('table-tugauh-export'));
     XLSX.utils.book_append_sheet(wb, wsTugas, "Tugas & UH");
 
@@ -412,6 +435,7 @@ function exportToExcel() {
     const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
 }
+
 // Otomatis load rekap saat tab Rekap diklik
 const originalSwitchTab = switchTab;
 switchTab = function(tabId) {
