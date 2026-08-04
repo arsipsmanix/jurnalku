@@ -154,14 +154,38 @@ function renderPenilaian() {
     
     globalStudents.forEach((siswa, index) => {
         container.innerHTML += `
-            <div class="bg-white p-2 rounded-lg border shadow-sm flex items-center justify-between">
-                <p class="text-sm font-semibold text-gray-800 w-2/3 truncate">${index+1}. ${siswa.nama_siswa}</p>
-                <input type="number" id="nilai-${siswa.id_siswa}" placeholder="0" class="w-16 p-1 text-center border rounded font-bold text-emerald-600 outline-none focus:border-emerald-500">
+            <div class="bg-white p-3 rounded-lg border shadow-sm flex items-center justify-between gap-2">
+                <div class="w-1/2">
+                    <p class="text-xs font-bold text-gray-500">${index+1}. ${siswa.id_siswa}</p>
+                    <p class="text-sm font-semibold text-gray-800 truncate">${siswa.nama_siswa}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="nilai-${siswa.id_siswa}" placeholder="0" class="w-16 p-1 text-center border rounded font-bold text-emerald-600 outline-none focus:border-emerald-500">
+                    <label class="flex items-center gap-1 cursor-pointer bg-gray-50 px-2 py-1 rounded border border-gray-200">
+                        <input type="checkbox" id="check-belum-${siswa.id_siswa}" onchange="toggleBelum('${siswa.id_siswa}')" class="rounded text-red-500 focus:ring-0">
+                        <span class="text-[10px] font-bold text-red-500 select-none">Belum</span>
+                    </label>
+                </div>
             </div>
         `;
     });
 }
 
+// Handler saat centang "Belum" diklik
+function toggleBelum(idSiswa) {
+    const isChecked = document.getElementById(`check-belum-${idSiswa}`).checked;
+    const inputNilai = document.getElementById(`nilai-${idSiswa}`);
+    
+    if (isChecked) {
+        inputNilai.value = 0;
+        inputNilai.disabled = true;
+        inputNilai.classList.add('bg-gray-100', 'text-gray-400');
+    } else {
+        inputNilai.value = '';
+        inputNilai.disabled = false;
+        inputNilai.classList.remove('bg-gray-100', 'text-gray-400');
+    }
+}
 // ==========================================
 // FUNGSI PENGIRIMAN DATA (POST)
 // ==========================================
@@ -208,21 +232,35 @@ async function submitPenilaian() {
     const idKelas = document.getElementById('global-kelas').value;
     if(!idKelas) return alert("Pilih kelas dulu!");
 
+    const jenis = document.getElementById('penilaian-jenis').value; // TUGAS / UH
     const arrNilai = [];
+    
     globalStudents.forEach(siswa => {
+        const isBelum = document.getElementById(`check-belum-${siswa.id_siswa}`).checked;
         const nilaiInput = document.getElementById(`nilai-${siswa.id_siswa}`).value;
-        if(nilaiInput !== "") {
-            arrNilai.push({ id_siswa: siswa.id_siswa, nilai: parseInt(nilaiInput) });
+
+        if (isBelum) {
+            arrNilai.push({ 
+                id_siswa: siswa.id_siswa, 
+                nilai: 0, 
+                keterangan: jenis === 'TUGAS' ? 'Belum Mengumpulkan' : 'Belum Ulangan' 
+            });
+        } else if (nilaiInput !== "") {
+            arrNilai.push({ 
+                id_siswa: siswa.id_siswa, 
+                nilai: parseInt(nilaiInput),
+                keterangan: 'Lengkap'
+            });
         }
     });
 
-    if(arrNilai.length === 0) return alert("Belum ada nilai yang diinput!");
+    if(arrNilai.length === 0) return alert("Belum ada nilai atau centangan yang diisi!");
 
     const payload = {
         action: "savePenilaian",
         tanggal: new Date().toISOString().split('T')[0],
         id_kelas: idKelas,
-        jenis: document.getElementById('penilaian-jenis').value,
+        jenis: jenis,
         nama_penilaian: document.getElementById('penilaian-judul').value,
         data_nilai: arrNilai
     };
@@ -230,9 +268,8 @@ async function submitPenilaian() {
     showLoading(true);
     await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
     showLoading(false);
-    alert("Data penilaian berhasil disimpan!");
+    alert(`Data Penilaian ${jenis} berhasil disimpan!`);
 }
-
 // Inisialisasi awal
 window.onload = () => {
     setLiveDate();
