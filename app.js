@@ -238,3 +238,70 @@ window.onload = () => {
     setLiveDate();
     loadKelas();
 };
+async function loadRekapData() {
+    const idKelas = document.getElementById('global-kelas').value;
+    if (!idKelas) return alert("Pilih kelas di atas dulu!");
+
+    showLoading(true);
+    try {
+        const res = await fetch(`${GAS_URL}?action=getRekap`);
+        const json = await res.json();
+        
+        if(json.status === "success") {
+            const allPresensi = json.data.presensi;
+            const allMaju = json.data.nilaiMaju;
+
+            // 1. Render Rekap Presensi
+            const tbodyPresensi = document.getElementById('table-rekap-presensi');
+            tbodyPresensi.innerHTML = '';
+
+            globalStudents.forEach(siswa => {
+                // Hitung jumlah H/S/I/A/R per siswa
+                const presensiSiswa = allPresensi.filter(p => String(p.id_siswa) === String(siswa.id_siswa));
+                const count = { H: 0, S: 0, I: 0, A: 0, R: 0 };
+                presensiSiswa.forEach(p => {
+                    if (count[p.status] !== undefined) count[p.status]++;
+                });
+
+                tbodyPresensi.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2 font-medium text-gray-800 truncate max-w-[120px]">${siswa.nama_siswa}</td>
+                        <td class="p-2 text-center font-bold text-green-600">${count.H}</td>
+                        <td class="p-2 text-center font-bold text-yellow-600">${count.S}</td>
+                        <td class="p-2 text-center font-bold text-blue-600">${count.I}</td>
+                        <td class="p-2 text-center font-bold text-red-600">${count.A}</td>
+                        <td class="p-2 text-center font-bold text-purple-600">${count.R}</td>
+                    </tr>
+                `;
+            });
+
+            // 2. Render Rekap Nilai Maju
+            const tbodyMaju = document.getElementById('table-rekap-maju');
+            tbodyMaju.innerHTML = '';
+
+            globalStudents.forEach(siswa => {
+                const majuSiswa = allMaju.filter(m => String(m.id_siswa) === String(siswa.id_siswa));
+                const totalPoin = majuSiswa.reduce((sum, item) => sum + Number(item.poin || 0), 0);
+
+                tbodyMaju.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-2 font-medium text-gray-800 truncate max-w-[150px]">${siswa.nama_siswa}</td>
+                        <td class="p-2 text-right font-extrabold text-amber-600">+${totalPoin}</td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (e) {
+        alert("Gagal memuat data rekap.");
+    }
+    showLoading(false);
+}
+
+// Otomatis load rekap saat tab Rekap diklik
+const originalSwitchTab = switchTab;
+switchTab = function(tabId) {
+    originalSwitchTab(tabId);
+    if (tabId === 'rekap') {
+        loadRekapData();
+    }
+};
