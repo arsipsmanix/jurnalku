@@ -51,70 +51,104 @@
                 <h1 class="text-xl font-bold text-gray-800">Halo, Pak Tri!</h1>
                 <p id="current-date" class="text-sm text-gray-500">Memuat tanggal...</p>
             </div>
-            <!-- Ganti src dengan link foto profilmu -->
-            <img src="https://ui-avatars.com/api/?name=Tri+Susanto&background=0D8ABC&color=fff" alt="Profil" class="w-12 h-12 rounded-full shadow-sm border-2 border-blue-100 object-cover">
+            <img src="foto.jpg" alt="Profil" class="w-12 h-12 rounded-full shadow-sm border-2 border-blue-100 object-cover">
         </header>
+
+        <!-- GLOBAL CLASS SELECTOR (Selalu Tampil) -->
+        <div class="p-5 pb-0">
+            <div class="bg-white p-3 rounded-xl shadow-sm border border-gray-200 flex items-center gap-3">
+                <i class="fas fa-users text-blue-500"></i>
+                <select id="global-kelas" onchange="loadSiswa()" class="w-full bg-transparent outline-none font-bold text-gray-700">
+                    <option value="">-- Pilih Kelas Dulu --</option>
+                </select>
+            </div>
+            <p id="loading-indicator" class="text-xs text-blue-500 mt-2 hidden animate-pulse"><i class="fas fa-spinner fa-spin"></i> Sinkronisasi data...</p>
+        </div>
 
         <!-- SEKSI BERANDA -->
         <section id="home" class="p-5">
             <h2 class="text-lg font-semibold mb-4 text-gray-700 hidden md:block">Dashboard Utama</h2>
-            
             <div class="grid grid-cols-2 gap-4">
                 <div onclick="switchTab('presensi')" class="bg-blue-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
                     <i class="fas fa-clipboard-check text-3xl mb-3"></i>
                     <h3 class="font-bold">Jurnal Harian</h3>
-                    <p class="text-xs opacity-80 mt-1">Presensi & KBM</p>
                 </div>
-                
-                <div onclick="switchTab('nilai')" class="bg-amber-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
+                <div onclick="switchTab('nilai-maju')" class="bg-amber-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
                     <i class="fas fa-bolt text-3xl mb-3"></i>
                     <h3 class="font-bold">Nilai Maju</h3>
-                    <p class="text-xs opacity-80 mt-1">Input Cepat +5 / +10</p>
                 </div>
-                
-                <div onclick="switchTab('nilai')" class="bg-emerald-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
+                <div onclick="switchTab('penilaian')" class="bg-emerald-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
                     <i class="fas fa-tasks text-3xl mb-3"></i>
                     <h3 class="font-bold">Tugas & UH</h3>
-                    <p class="text-xs opacity-80 mt-1">Input nilai tertulis</p>
                 </div>
-                
                 <div onclick="switchTab('rekap')" class="bg-purple-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
                     <i class="fas fa-chart-pie text-3xl mb-3"></i>
                     <h3 class="font-bold">Rekap Data</h3>
-                    <p class="text-xs opacity-80 mt-1">Buku Nilai & Kehadiran</p>
                 </div>
             </div>
         </section>
 
-        <!-- SEKSI PRESENSI & JURNAL (Template Awal) -->
+        <!-- SEKSI PRESENSI & JURNAL -->
         <section id="presensi" class="p-5 hide-section">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-bold">Jurnal & Presensi</h2>
-                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+                <h2 class="text-lg font-bold text-gray-800">Jurnal & Presensi</h2>
+                <button onclick="submitJurnalPresensi()" class="bg-blue-600 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">Simpan</button>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-gray-500 text-sm text-center">Form input kelas dan presensi akan dibuat di sini...</p>
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 space-y-3">
+                <div class="flex gap-2">
+                    <input type="date" id="jurnal-tanggal" class="w-1/2 p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                    <input type="text" id="jurnal-jam" placeholder="Jam ke- (Cth: 1-2)" class="w-1/2 p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                </div>
+                <input type="text" id="jurnal-materi" placeholder="Materi / Tujuan Pembelajaran" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                <input type="text" id="jurnal-aktivitas" placeholder="Aktivitas (Cth: Diskusi Kelompok)" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                <textarea id="jurnal-catatan" placeholder="Catatan Kelas (Opsional)" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500" rows="2"></textarea>
+            </div>
+
+            <h3 class="font-bold text-gray-700 mb-2">Presensi Siswa</h3>
+            <div id="list-presensi" class="space-y-2 pb-10">
+                <p class="text-xs text-gray-400">Pilih kelas di atas untuk memunculkan daftar siswa.</p>
             </div>
         </section>
 
-        <!-- SEKSI PENILAIAN (Template Awal) -->
-        <section id="nilai" class="p-5 hide-section">
-            <h2 class="text-lg font-bold mb-4">Input Penilaian</h2>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-gray-500 text-sm text-center">Tombol +5, +10, dan tabel tugas akan dibuat di sini...</p>
+        <!-- SEKSI NILAI MAJU -->
+        <section id="nilai-maju" class="p-5 hide-section">
+            <h2 class="text-lg font-bold text-gray-800 mb-1">Nilai Maju / Keaktifan</h2>
+            <p class="text-xs text-gray-500 mb-4">Tap tombol untuk tambah poin instan.</p>
+            <div id="list-nilai-maju" class="space-y-2 pb-10">
+                <p class="text-xs text-gray-400">Pilih kelas di atas untuk memunculkan daftar siswa.</p>
             </div>
         </section>
 
-        <!-- SEKSI REKAP (Template Awal) -->
+        <!-- SEKSI TUGAS & UH -->
+        <section id="penilaian" class="p-5 hide-section">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-800">Tugas & UH</h2>
+                <button onclick="submitPenilaian()" class="bg-emerald-600 active:bg-emerald-800 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">Simpan</button>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 space-y-3">
+                <select id="penilaian-jenis" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-emerald-500 font-semibold">
+                    <option value="TUGAS">Penilaian Tugas</option>
+                    <option value="UH">Ulangan Harian (UH)</option>
+                </select>
+                <input type="text" id="penilaian-judul" placeholder="Judul Tugas / Materi UH" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-emerald-500">
+            </div>
+
+            <h3 class="font-bold text-gray-700 mb-2">Input Nilai</h3>
+            <div id="list-penilaian" class="space-y-2 pb-10">
+                <p class="text-xs text-gray-400">Pilih kelas di atas untuk memunculkan daftar siswa.</p>
+            </div>
+        </section>
+
+        <!-- SEKSI REKAP -->
         <section id="rekap" class="p-5 hide-section">
             <h2 class="text-lg font-bold mb-4">Rekapitulasi</h2>
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <p class="text-gray-500 text-sm text-center">Tabel data rekap dari Google Sheets muncul di sini...</p>
+                <p class="text-gray-500 text-sm text-center">Fitur rekap data penuh akan dirender di sini via Google Sheets. (Bisa dilihat langsung di spreadsheet untuk saat ini).</p>
             </div>
         </section>
-
     </main>
-
     <!-- Bottom Navigation Mobile -->
     <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-20">
         <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center text-blue-600 w-1/4">
