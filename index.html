@@ -160,6 +160,26 @@
         </div>
     </div>
 
+    <!-- 0. REKAP MATERI & JURNAL (PALING ATAS) -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
+        <h3 class="font-bold text-gray-700 text-sm mb-3"><i class="fas fa-book-reader text-indigo-500 mr-2"></i>Rekap Materi & Progress Pembelajaran</h3>
+        <div class="overflow-x-auto">
+            <table id="table-materi-export" class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 border-b text-gray-600">
+                        <th class="p-2 min-w-[80px]">Tanggal</th>
+                        <th class="p-2 min-w-[50px] text-center">Jam</th>
+                        <th class="p-2 min-w-[150px]">Materi / Tujuan Pembelajaran</th>
+                        <th class="p-2 min-w-[120px]">Aktivitas</th>
+                    </tr>
+                </thead>
+                <tbody id="table-rekap-materi">
+                    <tr><td colspan="4" class="p-3 text-center text-gray-400">Pilih kelas lalu klik Refresh.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- 1. Rekap Kehadiran -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4">
         <h3 class="font-bold text-gray-700 text-sm mb-3"><i class="fas fa-user-check text-green-500 mr-2"></i>Rekap Kehadiran Siswa</h3>
@@ -200,7 +220,7 @@
         </div>
     </div>
 
-    <!-- 3. Rekap Tugas & UH (Dijejer Berdasarkan Tanggal) -->
+    <!-- 3. Rekap Tugas & UH -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <h3 class="font-bold text-gray-700 text-sm mb-3"><i class="fas fa-tasks text-blue-500 mr-2"></i>Rekap Tugas & Ulangan Harian</h3>
         <div class="overflow-x-auto">
@@ -208,7 +228,6 @@
                 <thead>
                     <tr id="header-rekap-tugauh" class="bg-gray-50 border-b text-gray-600">
                         <th class="p-2 min-w-[120px]">Nama</th>
-                        <!-- Kolom Tugas & UH akan otomatis dijejer di sini via JS -->
                     </tr>
                 </thead>
                 <tbody id="table-rekap-tugauh">
@@ -217,7 +236,8 @@
             </table>
         </div>
     </div>
-</section>    </main>
+</section>    
+</main>
     <!-- Bottom Navigation Mobile -->
     <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-20">
         <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center text-blue-600 w-1/4">
