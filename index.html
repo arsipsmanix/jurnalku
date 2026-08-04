@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jurnalku - Digital Workspace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* Sembunyikan scrollbar tapi tetap bisa di-scroll */
+        ::-webkit-scrollbar { display: none; }
+        .hide-section { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans pb-20 md:pb-0 md:flex">
+
+    <!-- Sidebar untuk versi Laptop/Tablet (Tersembunyi di HP) -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border-r h-screen fixed">
+        <div class="p-6 flex flex-col items-center border-b">
+            <!-- Ganti src dengan link foto profilmu -->
+            <img src="https://ui-avatars.com/api/?name=Tri+Susanto&background=0D8ABC&color=fff&size=100" alt="Foto Profil" class="w-20 h-20 rounded-full border-4 border-blue-100 mb-3 shadow-sm object-cover">
+            <h2 class="text-lg font-bold text-gray-800">Pak Tri</h2>
+            <p class="text-xs text-gray-500">SMAN 9 Surabaya</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="switchTab('home')" class="w-full flex items-center p-3 text-blue-600 bg-blue-50 rounded-lg font-medium">
+                <i class="fas fa-home w-6"></i> Beranda
+            </button>
+            <button onclick="switchTab('presensi')" class="w-full flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                <i class="fas fa-clipboard-list w-6"></i> Jurnal & Presensi
+            </button>
+            <button onclick="switchTab('nilai')" class="w-full flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                <i class="fas fa-star w-6"></i> Penilaian
+            </button>
+            <button onclick="switchTab('rekap')" class="w-full flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
+                <i class="fas fa-chart-bar w-6"></i> Rekap Data
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Konten Utama -->
+    <main class="w-full md:ml-64 min-h-screen">
+        
+        <!-- Header Mobile -->
+        <header class="md:hidden bg-white px-5 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Halo, Pak Tri!</h1>
+                <p id="current-date" class="text-sm text-gray-500">Memuat tanggal...</p>
+            </div>
+            <!-- Ganti src dengan link foto profilmu -->
+            <img src="https://ui-avatars.com/api/?name=Tri+Susanto&background=0D8ABC&color=fff" alt="Profil" class="w-12 h-12 rounded-full shadow-sm border-2 border-blue-100 object-cover">
+        </header>
+
+        <!-- SEKSI BERANDA -->
+        <section id="home" class="p-5">
+            <h2 class="text-lg font-semibold mb-4 text-gray-700 hidden md:block">Dashboard Utama</h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div onclick="switchTab('presensi')" class="bg-blue-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
+                    <i class="fas fa-clipboard-check text-3xl mb-3"></i>
+                    <h3 class="font-bold">Jurnal Harian</h3>
+                    <p class="text-xs opacity-80 mt-1">Presensi & KBM</p>
+                </div>
+                
+                <div onclick="switchTab('nilai')" class="bg-amber-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
+                    <i class="fas fa-bolt text-3xl mb-3"></i>
+                    <h3 class="font-bold">Nilai Maju</h3>
+                    <p class="text-xs opacity-80 mt-1">Input Cepat +5 / +10</p>
+                </div>
+                
+                <div onclick="switchTab('nilai')" class="bg-emerald-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
+                    <i class="fas fa-tasks text-3xl mb-3"></i>
+                    <h3 class="font-bold">Tugas & UH</h3>
+                    <p class="text-xs opacity-80 mt-1">Input nilai tertulis</p>
+                </div>
+                
+                <div onclick="switchTab('rekap')" class="bg-purple-500 text-white p-5 rounded-2xl shadow-md cursor-pointer active:scale-95 transition-transform">
+                    <i class="fas fa-chart-pie text-3xl mb-3"></i>
+                    <h3 class="font-bold">Rekap Data</h3>
+                    <p class="text-xs opacity-80 mt-1">Buku Nilai & Kehadiran</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI PRESENSI & JURNAL (Template Awal) -->
+        <section id="presensi" class="p-5 hide-section">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold">Jurnal & Presensi</h2>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">Simpan</button>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 text-sm text-center">Form input kelas dan presensi akan dibuat di sini...</p>
+            </div>
+        </section>
+
+        <!-- SEKSI PENILAIAN (Template Awal) -->
+        <section id="nilai" class="p-5 hide-section">
+            <h2 class="text-lg font-bold mb-4">Input Penilaian</h2>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 text-sm text-center">Tombol +5, +10, dan tabel tugas akan dibuat di sini...</p>
+            </div>
+        </section>
+
+        <!-- SEKSI REKAP (Template Awal) -->
+        <section id="rekap" class="p-5 hide-section">
+            <h2 class="text-lg font-bold mb-4">Rekapitulasi</h2>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-gray-500 text-sm text-center">Tabel data rekap dari Google Sheets muncul di sini...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Mobile -->
+    <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)] z-20">
+        <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center text-blue-600 w-1/4">
+            <i class="fas fa-home text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Beranda</span>
+        </button>
+        <button onclick="switchTab('presensi')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-600 w-1/4">
+            <i class="fas fa-clipboard-list text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Jurnal</span>
+        </button>
+        <button onclick="switchTab('nilai')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-600 w-1/4">
+            <i class="fas fa-star text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Nilai</span>
+        </button>
+        <button onclick="switchTab('rekap')" class="nav-btn flex flex-col items-center text-gray-400 hover:text-blue-600 w-1/4">
+            <i class="fas fa-chart-bar text-xl mb-1"></i>
+            <span class="text-[10px] font-medium">Rekap</span>
+        </button>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
