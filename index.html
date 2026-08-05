@@ -36,19 +36,19 @@
         
         <!-- Menu Navigasi Sidebar -->
         <div class="flex flex-col p-4 gap-2 flex-grow">
-            <button onclick="showSection('home')" class="flex items-center text-left p-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium transition">
+            <button onclick="switchTab('home')" class="flex items-center text-left p-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium transition">
                 <i class="fas fa-home w-6 text-center mr-2"></i> Beranda
             </button>
-            <button onclick="showSection('jurnal')" class="flex items-center text-left p-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium transition">
+            <button onclick="switchTab('presensi')" class="flex items-center text-left p-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium transition">
                 <i class="fas fa-clipboard-list w-6 text-center mr-2"></i> Jurnal Harian
             </button>
-            <button onclick="showSection('nilaimaju')" class="flex items-center text-left p-3 rounded-lg hover:bg-amber-50 hover:text-amber-600 text-gray-700 font-medium transition">
+            <button onclick="switchTab('nilai-maju')" class="flex items-center text-left p-3 rounded-lg hover:bg-amber-50 hover:text-amber-600 text-gray-700 font-medium transition">
                 <i class="fas fa-bolt w-6 text-center mr-2"></i> Nilai Maju
             </button>
-            <button onclick="showSection('penilaian')" class="flex items-center text-left p-3 rounded-lg hover:bg-green-50 hover:text-green-600 text-gray-700 font-medium transition">
+            <button onclick="switchTab('penilaian')" class="flex items-center text-left p-3 rounded-lg hover:bg-green-50 hover:text-green-600 text-gray-700 font-medium transition">
                 <i class="fas fa-tasks w-6 text-center mr-2"></i> Tugas & UH
             </button>
-            <button onclick="showSection('rekap')" class="flex items-center text-left p-3 rounded-lg hover:bg-purple-50 hover:text-purple-600 text-gray-700 font-medium transition">
+            <button onclick="switchTab('rekap')" class="flex items-center text-left p-3 rounded-lg hover:bg-purple-50 hover:text-purple-600 text-gray-700 font-medium transition">
                 <i class="fas fa-chart-pie w-6 text-center mr-2"></i> Rekap Data
             </button>
         </div>
@@ -58,24 +58,25 @@
     <!-- 2. NAVBAR BAWAH (Khusus Mobile/HP) -->
     <!-- (Perhatikan class md:hidden agar hilang di laptop) -->
     <!-- ========================================== -->
+    <!-- NAVBAR BAWAH (Khusus Mobile/HP) -->
     <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around text-[10px] font-medium text-gray-500 z-50 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:hidden">
-        <button onclick="showSection('home')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-home">
+        <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5">
             <i class="fas fa-home text-lg mb-1"></i>
             <span>Beranda</span>
         </button>
-        <button onclick="showSection('jurnal')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-jurnal">
+        <button onclick="switchTab('presensi')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5">
             <i class="fas fa-clipboard-list text-lg mb-1"></i>
             <span>Jurnal</span>
         </button>
-        <button onclick="showSection('nilaimaju')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-nilaimaju">
+        <button onclick="switchTab('nilai-maju')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5">
             <i class="fas fa-bolt text-lg mb-1"></i>
             <span>N. Maju</span>
         </button>
-        <button onclick="showSection('penilaian')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-penilaian">
+        <button onclick="switchTab('penilaian')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5">
             <i class="fas fa-tasks text-lg mb-1"></i>
             <span>Tugas/UH</span>
         </button>
-        <button onclick="showSection('rekap')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-rekap">
+        <button onclick="switchTab('rekap')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5">
             <i class="fas fa-chart-pie text-lg mb-1"></i>
             <span>Rekap</span>
         </button>
