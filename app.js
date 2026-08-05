@@ -21,11 +21,52 @@ function setLiveDate() {
 }
 
 function switchTab(tabId) {
-    const sections = ['home', 'presensi', 'nilai-maju', 'penilaian', 'rekap'];
-    sections.forEach(id => {
-        document.getElementById(id).classList.add('hide-section');
-    });
-    document.getElementById(tabId).classList.remove('hide-section');
+    try {
+        // 1. Sembunyikan semua section
+        const sections = ['home', 'presensi', 'nilai-maju', 'penilaian', 'rekap'];
+        sections.forEach(id => {
+            const sec = document.getElementById(id);
+            if (sec) {
+                sec.classList.add('hide-section');
+            }
+        });
+
+        // 2. Tampilkan section yang dituju
+        const targetSection = document.getElementById(tabId);
+        if (targetSection) {
+            targetSection.classList.remove('hide-section');
+        }
+
+        // 3. Reset warna & style semua tombol navigasi
+        document.querySelectorAll('button[onclick^="switchTab"]').forEach(btn => {
+            btn.classList.remove('text-blue-600', 'bg-blue-50', 'font-bold');
+            if(btn.classList.contains('w-1/5')) {
+                btn.classList.add('text-gray-500'); // warna icon bawah
+            } else {
+                btn.classList.add('text-gray-700'); // warna text sidebar
+            }
+        });
+
+        // 4. Beri efek "Aktif"/Nyala pada tombol yang sedang diklik (Sidebar & Bottom bar)
+        document.querySelectorAll(`button[onclick="switchTab('${tabId}')"]`).forEach(btn => {
+            btn.classList.remove('text-gray-500', 'text-gray-700');
+            btn.classList.add('text-blue-600', 'font-bold');
+            if (btn.classList.contains('text-left')) {
+                btn.classList.add('bg-blue-50');
+            }
+        });
+
+        // 5. Otomatis load data rekap jika tab rekap diklik
+        if (tabId === 'rekap') {
+            loadRekapData();
+        }
+
+        // Scroll mulus ke atas
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (error) {
+        console.error("Navigasi Error:", error);
+    }
 }
 
 function showLoading(show) {
@@ -435,12 +476,3 @@ function exportToExcel() {
     const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
 }
-
-// Otomatis load rekap saat tab Rekap diklik
-const originalSwitchTab = switchTab;
-switchTab = function(tabId) {
-    originalSwitchTab(tabId);
-    if (tabId === 'rekap') {
-        loadRekapData();
-    }
-};
