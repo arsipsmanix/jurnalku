@@ -23,16 +23,42 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans pb-20 md:pb-0 md:flex">
 
-    <!-- Sidebar untuk versi Laptop/Tablet (Tersembunyi di HP) -->
-    <aside class="hidden md:flex flex-col w-64 bg-white border-r h-screen fixed">
+    <!-- ========================================== -->
+    <!-- 1. SIDEBAR KIRI (Khusus Laptop/Tablet) -->
+    <!-- ========================================== -->
+    <aside class="hidden md:flex flex-col w-64 bg-white border-r h-screen fixed top-0 left-0 z-40">
         <div class="p-6 flex flex-col items-center border-b">
             <!-- Ganti src dengan link foto profilmu -->
             <img src="foto.jpg" alt="Foto Profil" class="w-20 h-20 rounded-full border-4 border-blue-100 mb-3 shadow-sm object-cover">
             <h2 class="text-lg font-bold text-gray-800">pakgurutri</h2>
             <p class="text-xs text-gray-500">SMAN 9 Surabaya</p>
         </div>
-       <!-- NAVBAR BAWAH (5 MENU UTAMA) -->
-    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around text-[10px] font-medium text-gray-500 z-50 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        
+        <!-- Menu Navigasi Sidebar -->
+        <div class="flex flex-col p-4 gap-2 flex-grow">
+            <button onclick="showSection('home')" class="flex items-center text-left p-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium transition">
+                <i class="fas fa-home w-6 text-center mr-2"></i> Beranda
+            </button>
+            <button onclick="showSection('jurnal')" class="flex items-center text-left p-3 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-gray-700 font-medium transition">
+                <i class="fas fa-clipboard-list w-6 text-center mr-2"></i> Jurnal Harian
+            </button>
+            <button onclick="showSection('nilaimaju')" class="flex items-center text-left p-3 rounded-lg hover:bg-amber-50 hover:text-amber-600 text-gray-700 font-medium transition">
+                <i class="fas fa-bolt w-6 text-center mr-2"></i> Nilai Maju
+            </button>
+            <button onclick="showSection('penilaian')" class="flex items-center text-left p-3 rounded-lg hover:bg-green-50 hover:text-green-600 text-gray-700 font-medium transition">
+                <i class="fas fa-tasks w-6 text-center mr-2"></i> Tugas & UH
+            </button>
+            <button onclick="showSection('rekap')" class="flex items-center text-left p-3 rounded-lg hover:bg-purple-50 hover:text-purple-600 text-gray-700 font-medium transition">
+                <i class="fas fa-chart-pie w-6 text-center mr-2"></i> Rekap Data
+            </button>
+        </div>
+    </aside>
+
+    <!-- ========================================== -->
+    <!-- 2. NAVBAR BAWAH (Khusus Mobile/HP) -->
+    <!-- (Perhatikan class md:hidden agar hilang di laptop) -->
+    <!-- ========================================== -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around text-[10px] font-medium text-gray-500 z-50 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)] md:hidden">
         <button onclick="showSection('home')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-home">
             <i class="fas fa-home text-lg mb-1"></i>
             <span>Beranda</span>
@@ -54,7 +80,6 @@
             <span>Rekap</span>
         </button>
     </nav>
-    </aside>
 
     <!-- Konten Utama -->
     <main class="w-full md:ml-64 min-h-screen">
