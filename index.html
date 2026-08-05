@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jurnalku - Digital Workspace</title>
+    <title>Jurnalku</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome untuk Ikon -->
@@ -27,24 +27,33 @@
     <aside class="hidden md:flex flex-col w-64 bg-white border-r h-screen fixed">
         <div class="p-6 flex flex-col items-center border-b">
             <!-- Ganti src dengan link foto profilmu -->
-            <img src="https://ui-avatars.com/api/?name=Tri+Susanto&background=0D8ABC&color=fff&size=100" alt="Foto Profil" class="w-20 h-20 rounded-full border-4 border-blue-100 mb-3 shadow-sm object-cover">
-            <h2 class="text-lg font-bold text-gray-800">Pak Tri</h2>
+            <img src="foto.jpg" alt="Foto Profil" class="w-20 h-20 rounded-full border-4 border-blue-100 mb-3 shadow-sm object-cover">
+            <h2 class="text-lg font-bold text-gray-800">pakgurutri</h2>
             <p class="text-xs text-gray-500">SMAN 9 Surabaya</p>
         </div>
-        <nav class="flex-1 p-4 space-y-2">
-            <button onclick="switchTab('home')" class="w-full flex items-center p-3 text-blue-600 bg-blue-50 rounded-lg font-medium">
-                <i class="fas fa-home w-6"></i> Beranda
-            </button>
-            <button onclick="switchTab('presensi')" class="w-full flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
-                <i class="fas fa-clipboard-list w-6"></i> Jurnal & Presensi
-            </button>
-            <button onclick="switchTab('nilai')" class="w-full flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
-                <i class="fas fa-star w-6"></i> Penilaian
-            </button>
-            <button onclick="switchTab('rekap')" class="w-full flex items-center p-3 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">
-                <i class="fas fa-chart-bar w-6"></i> Rekap Data
-            </button>
-        </nav>
+       <!-- NAVBAR BAWAH (5 MENU UTAMA) -->
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around text-[10px] font-medium text-gray-500 z-50 pb-safe shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <button onclick="showSection('home')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-home">
+            <i class="fas fa-home text-lg mb-1"></i>
+            <span>Beranda</span>
+        </button>
+        <button onclick="showSection('jurnal')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-jurnal">
+            <i class="fas fa-clipboard-list text-lg mb-1"></i>
+            <span>Jurnal</span>
+        </button>
+        <button onclick="showSection('nilaimaju')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-nilaimaju">
+            <i class="fas fa-bolt text-lg mb-1"></i>
+            <span>N. Maju</span>
+        </button>
+        <button onclick="showSection('penilaian')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-penilaian">
+            <i class="fas fa-tasks text-lg mb-1"></i>
+            <span>Tugas/UH</span>
+        </button>
+        <button onclick="showSection('rekap')" class="nav-btn flex flex-col items-center p-2 hover:text-blue-600 w-1/5" id="nav-rekap">
+            <i class="fas fa-chart-pie text-lg mb-1"></i>
+            <span>Rekap</span>
+        </button>
+    </nav>
     </aside>
 
     <!-- Konten Utama -->
@@ -53,7 +62,7 @@
         <!-- Header Mobile -->
         <header class="md:hidden bg-white px-5 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
             <div>
-                <h1 class="text-xl font-bold text-gray-800">Halo, Pak Tri!</h1>
+                <h1 class="text-xl font-bold text-gray-800">Halo, pakgurutri</h1>
                 <p id="current-date" class="text-sm text-gray-500">Memuat tanggal...</p>
             </div>
             <img src="foto.jpg" alt="Profil" class="w-12 h-12 rounded-full shadow-sm border-2 border-blue-100 object-cover">
