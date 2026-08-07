@@ -5,6 +5,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzh6Rw5kB0osFXDFHYLzanm
 
 let globalStudents = []; // Menyimpan data siswa kelas aktif
 let presensiState = {};  // Menyimpan status H/S/I/A
+let globalRekapCache = null; // Menyimpan data rekap sementara untuk fitur Edit
 
 // ==========================================
 // UI HELPERS
@@ -110,10 +111,71 @@ async function loadSiswa() {
         renderPresensi();
         renderNilaiMaju();
         renderPenilaian();
+        
+        // Panggil fungsi tarik data rekap di latar belakang untuk fitur Edit
+        fetchRekapForEdit(idKelas);
     } catch (e) {
         alert("Gagal memuat data siswa.");
     }
     showLoading(false);
+}
+
+async function fetchRekapForEdit(idKelas) {
+    try {
+        const res = await fetch(`${GAS_URL}?action=getRekap`);
+        const json = await res.json();
+        if(json.status === "success") {
+            globalRekapCache = json.data;
+            checkExistingJurnal(); // Cek langsung barangkali form tanggal/jam sudah terisi
+        }
+    } catch(e) {
+        console.error("Gagal load rekap untuk edit", e);
+    }
+}
+
+function checkExistingJurnal() {
+    if (!globalRekapCache) return;
+    
+    const idKelas = document.getElementById('global-kelas').value;
+    const tanggal = document.getElementById('jurnal-tanggal').value;
+    const jamKe = document.getElementById('jurnal-jam').value;
+
+    if (!idKelas || !tanggal || !jamKe) return;
+
+    // Cari data jurnal yang cocok (Kelas, Tanggal, Jam)
+    const existingJurnal = globalRekapCache.jurnal.find(j => {
+        const tglSheet = j.tanggal ? new Date(j.tanggal).toISOString().split('T')[0] : "";
+        return String(j.id_kelas) === String(idKelas) && 
+               tglSheet === tanggal && 
+               String(j.jam_ke) === String(jamKe);
+    });
+
+    if (existingJurnal) {
+        // Jurnal ketemu! Isi form materinya
+        document.getElementById('jurnal-materi').value = existingJurnal.materi_tp || "";
+        document.getElementById('jurnal-aktivitas').value = existingJurnal.aktivitas || "";
+        document.getElementById('jurnal-catatan').value = existingJurnal.catatan || "";
+
+        // Cari presensi untuk jurnal ini
+        const existingPresensi = globalRekapCache.presensi.filter(p => String(p.id_jurnal) === String(existingJurnal.id_jurnal));
+        
+        if (existingPresensi.length > 0) {
+            existingPresensi.forEach(p => {
+                if(presensiState[p.id_siswa] !== undefined) {
+                    setPresensi(p.id_siswa, p.status);
+                }
+            });
+        }
+    } else {
+        // Kalau tidak ada data, kosongkan form & kembalikan semua ke (H)
+        document.getElementById('jurnal-materi').value = "";
+        document.getElementById('jurnal-aktivitas').value = "";
+        document.getElementById('jurnal-catatan').value = "";
+        
+        globalStudents.forEach(siswa => {
+            setPresensi(siswa.id_siswa, 'H');
+        });
+    }
 }
 
 // ==========================================
@@ -234,6 +296,14 @@ async function submitJurnalPresensi() {
     const idKelas = document.getElementById('global-kelas').value;
     if(!idKelas) return alert("Pilih kelas dulu!");
 
+    // Ubah tombol jadi abu-abu loading
+    const btn = document.getElementById('btn-simpan-jurnal');
+    if(btn) {
+        btn.disabled = true;
+        btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+        btn.innerText = 'Menyimpan...';
+    }
+
     const payload = {
         action: "saveJurnalPresensi",
         tanggal: document.getElementById('jurnal-tanggal').value,
@@ -248,12 +318,25 @@ async function submitJurnalPresensi() {
         }))
     };
 
-    showLoading(true);
-    await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
-    showLoading(false);
-    alert("Jurnal dan Presensi berhasil disimpan!");
+    try {
+        showLoading(true);
+        await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
+        alert("Jurnal dan Presensi berhasil disimpan!");
+        
+        // Refresh data rekap di latar belakang agar kalau diedit lagi datanya update
+        fetchRekapForEdit(idKelas); 
+    } catch (e) {
+        alert("Gagal simpan: " + e);
+    } finally {
+        showLoading(false);
+        // Kembalikan tombol ke kondisi semula
+        if(btn) {
+            btn.disabled = false;
+            btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btn.innerText = 'Simpan';
+        }
+    }
 }
-
 async function submitNilaiMaju(idSiswa, poin) {
     const todayISO = new Date().toISOString().split('T')[0];
     
