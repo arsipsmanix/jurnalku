@@ -6,6 +6,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzh6Rw5kB0osFXDFHYLzanm
 let globalStudents = []; // Menyimpan data siswa kelas aktif
 let presensiState = {};  // Menyimpan status H/S/I/A
 let globalRekapCache = null; // Menyimpan data rekap sementara untuk fitur Edit
+let currentEditingJurnalId = null; // KTP untuk mengingat ID Jurnal saat mode Edit
 
 // ==========================================
 // UI HELPERS
@@ -134,29 +135,42 @@ async function fetchRekapForEdit(idKelas) {
 }
 
 function checkExistingJurnal() {
-    if (!globalRekapCache) return;
+    if (!globalRekapCache || !globalRekapCache.jurnal) return;
     
     const idKelas = document.getElementById('global-kelas').value;
     const tanggal = document.getElementById('jurnal-tanggal').value;
-    const jamKe = document.getElementById('jurnal-jam').value;
+    const jamKe = document.getElementById('jurnal-jam').value ? document.getElementById('jurnal-jam').value.trim() : '';
 
-    if (!idKelas || !tanggal || !jamKe) return;
+    if (!idKelas || !tanggal || !jamKe) {
+        currentEditingJurnalId = null; // Reset KTP
+        return;
+    }
 
     // Cari data jurnal yang cocok (Kelas, Tanggal, Jam)
     const existingJurnal = globalRekapCache.jurnal.find(j => {
-        const tglSheet = j.tanggal ? new Date(j.tanggal).toISOString().split('T')[0] : "";
+        let tglSheet = "";
+        if (j.tanggal) {
+            // Konversi aman dari jebakan UTC: pecah tanggal berdasarkan waktu lokal laptop/HP
+            const d = new Date(j.tanggal);
+            tglSheet = d.getFullYear() + '-' + 
+                       String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+                       String(d.getDate()).padStart(2, '0');
+        }
         return String(j.id_kelas) === String(idKelas) && 
                tglSheet === tanggal && 
-               String(j.jam_ke) === String(jamKe);
+               String(j.jam_ke).trim() === jamKe;
     });
 
     if (existingJurnal) {
-        // Jurnal ketemu! Isi form materinya
+        // JURNAL KETEMU! Simpan ID-nya untuk mode Update
+        currentEditingJurnalId = existingJurnal.id_jurnal;
+
+        // Isi form materinya
         document.getElementById('jurnal-materi').value = existingJurnal.materi_tp || "";
         document.getElementById('jurnal-aktivitas').value = existingJurnal.aktivitas || "";
         document.getElementById('jurnal-catatan').value = existingJurnal.catatan || "";
 
-        // Cari presensi untuk jurnal ini
+        // Cari & nyalakan presensi untuk jurnal ini
         const existingPresensi = globalRekapCache.presensi.filter(p => String(p.id_jurnal) === String(existingJurnal.id_jurnal));
         
         if (existingPresensi.length > 0) {
@@ -167,7 +181,9 @@ function checkExistingJurnal() {
             });
         }
     } else {
-        // Kalau tidak ada data, kosongkan form & kembalikan semua ke (H)
+        // JIKA TIDAK KETEMU! Kosongkan ID dan bersihkan form ke default (H)
+        currentEditingJurnalId = null;
+        
         document.getElementById('jurnal-materi').value = "";
         document.getElementById('jurnal-aktivitas').value = "";
         document.getElementById('jurnal-catatan').value = "";
@@ -296,7 +312,6 @@ async function submitJurnalPresensi() {
     const idKelas = document.getElementById('global-kelas').value;
     if(!idKelas) return alert("Pilih kelas dulu!");
 
-    // Ubah tombol jadi abu-abu loading
     const btn = document.getElementById('btn-simpan-jurnal');
     if(btn) {
         btn.disabled = true;
@@ -306,6 +321,7 @@ async function submitJurnalPresensi() {
 
     const payload = {
         action: "saveJurnalPresensi",
+        id_jurnal: currentEditingJurnalId, // PENTING: Mencegah double entry
         tanggal: document.getElementById('jurnal-tanggal').value,
         id_kelas: idKelas,
         jam_ke: document.getElementById('jurnal-jam').value,
@@ -323,13 +339,12 @@ async function submitJurnalPresensi() {
         await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
         alert("Jurnal dan Presensi berhasil disimpan!");
         
-        // Refresh data rekap di latar belakang agar kalau diedit lagi datanya update
-        fetchRekapForEdit(idKelas); 
+        // Setelah sukses save, tarik rekap terbaru agar update presensi selanjutnya aman
+        fetchRekapForEdit(idKelas);
     } catch (e) {
         alert("Gagal simpan: " + e);
     } finally {
         showLoading(false);
-        // Kembalikan tombol ke kondisi semula
         if(btn) {
             btn.disabled = false;
             btn.classList.remove('bg-gray-400', 'cursor-not-allowed');
