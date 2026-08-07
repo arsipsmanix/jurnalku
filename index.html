@@ -132,13 +132,15 @@
         <section id="presensi" class="p-5 hide-section">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-bold text-gray-800">Jurnal & Presensi</h2>
-                <button onclick="submitJurnalPresensi()" class="bg-blue-600 active:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">Simpan</button>
+                <!-- Tombol Simpan (Tambahkan id="btn-simpan-jurnal") -->
+                <button id="btn-simpan-jurnal" onclick="submitJurnalPresensi()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium text-sm transition shadow-sm">Simpan</button>
             </div>
             
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 space-y-3">
                 <div class="flex gap-2">
-                    <input type="date" id="jurnal-tanggal" class="w-1/2 p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
-                    <input type="text" id="jurnal-jam" placeholder="Jam ke- (Cth: 1-2)" class="w-1/2 p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
+                    <!-- Input Tanggal & Jam (Tambahkan onchange) -->
+                    <input type="date" id="jurnal-tanggal" onchange="checkExistingJurnal()" class="w-full md:w-1/2 p-2 border rounded text-gray-700 outline-none focus:border-blue-500">
+                    <input type="text" id="jurnal-jam" onchange="checkExistingJurnal()" placeholder="Jam ke- (Cth: 1,2)" class="w-full md:w-1/2 p-2 border rounded text-gray-700 outline-none focus:border-blue-500">
                 </div>
                 <input type="text" id="jurnal-materi" placeholder="Materi / Tujuan Pembelajaran" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
                 <input type="text" id="jurnal-aktivitas" placeholder="Aktivitas (Cth: Diskusi Kelompok)" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
