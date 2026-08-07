@@ -138,9 +138,9 @@
             
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 space-y-3">
                 <div class="flex gap-2">
-                    <!-- Input Tanggal & Jam (Tambahkan onchange) -->
+                    <!-- Input Tanggal & Jam (Jam pakai oninput) -->
                     <input type="date" id="jurnal-tanggal" onchange="checkExistingJurnal()" class="w-full md:w-1/2 p-2 border rounded text-gray-700 outline-none focus:border-blue-500">
-                    <input type="text" id="jurnal-jam" onchange="checkExistingJurnal()" placeholder="Jam ke- (Cth: 1,2)" class="w-full md:w-1/2 p-2 border rounded text-gray-700 outline-none focus:border-blue-500">
+                    <input type="text" id="jurnal-jam" oninput="checkExistingJurnal()" placeholder="Jam ke- (Cth: 1,2)" class="w-full md:w-1/2 p-2 border rounded text-gray-700 outline-none focus:border-blue-500">
                 </div>
                 <input type="text" id="jurnal-materi" placeholder="Materi / Tujuan Pembelajaran" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
                 <input type="text" id="jurnal-aktivitas" placeholder="Aktivitas (Cth: Diskusi Kelompok)" class="w-full p-2 border rounded-lg text-sm outline-none focus:border-blue-500">
