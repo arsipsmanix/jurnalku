@@ -127,7 +127,13 @@ async function fetchRekapForEdit(idKelas) {
         const json = await res.json();
         if(json.status === "success") {
             globalRekapCache = json.data;
-            checkExistingJurnal(); // Cek langsung barangkali form tanggal/jam sudah terisi
+            checkExistingJurnal();
+// Di dalam fetchRekapForEdit(idKelas), tambahkan di bawahnya:
+attachPenilaianTriggers();
+checkExistingPenilaian();
+
+
+// Cek langsung barangkali form tanggal/jam sudah terisi
         }
     } catch(e) {
         console.error("Gagal load rekap untuk edit", e);
@@ -190,6 +196,60 @@ function checkExistingJurnal() {
         
         globalStudents.forEach(siswa => {
             setPresensi(siswa.id_siswa, 'H');
+        });
+    }
+}
+
+// Baru (10/8)//
+
+// --- FITUR AUTO-LOAD PENILAIAN (TUGAS & UH) ---
+
+function attachPenilaianTriggers() {
+    // Sesuaikan ID elemen input jenis & judul penilaian di HTML Bapak jika berbeda
+    const selectJenis = document.getElementById('penilaian-jenis'); 
+    const inputJudul = document.getElementById('penilaian-nama'); 
+
+    if(selectJenis) {
+        selectJenis.removeEventListener('change', checkExistingPenilaian);
+        selectJenis.addEventListener('change', checkExistingPenilaian);
+    }
+    if(inputJudul) {
+        inputJudul.removeEventListener('input', checkExistingPenilaian);
+        inputJudul.addEventListener('input', checkExistingPenilaian);
+    }
+}
+
+function checkExistingPenilaian() {
+    if (!globalRekapCache || !globalRekapCache.tugasUh) return;
+
+    const idKelas = document.getElementById('global-kelas').value;
+    const selectJenis = document.getElementById('penilaian-jenis');
+    const inputJudul = document.getElementById('penilaian-nama');
+
+    if (!idKelas || !selectJenis || !inputJudul) return;
+
+    const jenis = selectJenis.value;
+    const judul = inputJudul.value.trim();
+
+    if (!jenis || !judul) return;
+
+    // Filter data rekap tugasUh yang cocok dengan Kelas, Jenis, dan Judul Penilaian
+    const existingNilaiList = globalRekapCache.tugasUh.filter(item => 
+        String(item.id_kelas) === String(idKelas) &&
+        String(item.jenis).toLowerCase() === String(jenis).toLowerCase() &&
+        String(item.nama_penilaian).toLowerCase() === String(judul).toLowerCase()
+    );
+
+    if (existingNilaiList.length > 0) {
+        // Jika sudah ada data nilai sebelumnya, masukkan ke kotak input masing-masing siswa
+        existingNilaiList.forEach(item => {
+            // Asumsi ID elemen input nilai siswa di renderPenilaian() berbentuk: input-nilai-[id_siswa] atau nilai-[id_siswa]
+            // Silakan sesuaikan string "input-nilai-" ini dengan yang dipakai di fungsi renderPenilaian() Bapak
+            const inputNilai = document.getElementById('input-nilai-' + item.id_siswa) || document.getElementById('nilai-' + item.id_siswa);
+            const inputKet = document.getElementById('input-ket-' + item.id_siswa) || document.getElementById('ket-' + item.id_siswa);
+
+            if (inputNilai) inputNilai.value = item.nilai !== undefined ? item.nilai : "";
+            if (inputKet) inputKet.value = item.keterangan || "";
         });
     }
 }
