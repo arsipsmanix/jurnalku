@@ -207,7 +207,7 @@ function checkExistingJurnal() {
 function attachPenilaianTriggers() {
     // Sesuaikan ID elemen input jenis & judul penilaian di HTML Bapak jika berbeda
     const selectJenis = document.getElementById('penilaian-jenis'); 
-    const inputJudul = document.getElementById('penilaian-nama'); 
+    const inputJudul = document.getElementById('penilaian-judul'); 
 
     if(selectJenis) {
         selectJenis.removeEventListener('change', checkExistingPenilaian);
@@ -224,7 +224,7 @@ function checkExistingPenilaian() {
 
     const idKelas = document.getElementById('global-kelas').value;
     const selectJenis = document.getElementById('penilaian-jenis');
-    const inputJudul = document.getElementById('penilaian-nama');
+    const inputJudul = document.getElementById('penilaian-judul');
 
     if (!idKelas || !selectJenis || !inputJudul) return;
 
