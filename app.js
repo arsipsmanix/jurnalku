@@ -65,7 +65,9 @@ function switchTab(tabId) {
         if (tabId === 'rekap') {
             loadRekapData();
         }
-
+        if (tabId === 'home') {
+            renderChartBeranda();
+        }
         // Scroll mulus ke atas
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -711,17 +713,26 @@ function renderChartBeranda() {
     const ctx = document.getElementById('berandaChart');
     if (!ctx) return;
 
-    // Ambil khusus data UH
-    const allUH = globalRekapCache.tugasUh.filter(item => String(item.jenis).toUpperCase() === 'UH');
+    // Ambil khusus data UH (Aman untuk tulisan 'UH' maupun 'Ulangan Harian')
+    const allUH = globalRekapCache.tugasUh.filter(item => {
+        if (!item.jenis) return false;
+        const j = String(item.jenis).trim().toUpperCase();
+        return j === 'UH' || j.includes('ULANGAN');
+    });
+
+    if (allUH.length === 0) return;
     
     // Ambil daftar kelas & nama UH yang unik
-    const kelasList = Array.from(new Set(allUH.map(item => item.id_kelas))).sort();
+    const kelasList = Array.from(new Set(allUH.map(item => String(item.id_kelas)))).sort();
     const uhList = Array.from(new Set(allUH.map(item => item.nama_penilaian))).sort();
 
     // Buat batangnya (dataset)
     const datasets = uhList.map((uhName, index) => {
         const dataRataRata = kelasList.map(idKelas => {
-            const scores = allUH.filter(item => item.nama_penilaian === uhName && item.id_kelas === idKelas);
+            const scores = allUH.filter(item => 
+                item.nama_penilaian === uhName && 
+                String(item.id_kelas) === String(idKelas)
+            );
             let sum = 0, count = 0;
             scores.forEach(s => {
                 if (s.nilai !== undefined && s.nilai !== null && s.nilai !== "") {
@@ -744,10 +755,18 @@ function renderChartBeranda() {
     chartBerandaInstance = new Chart(ctx, {
         type: 'bar',
         data: { labels: kelasList, datasets: datasets },
-        options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+        options: { 
+            responsive: true, 
+            scales: { y: { beginAtZero: true, max: 100 } } 
+        }
     });
 }
+// Download File .xlsx
+    const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+}
 
+//Render ChartRekap
 function renderChartRekap() {
     if (!globalRekapCache || !globalRekapCache.tugasUh) return;
     const idKelas = document.getElementById('global-kelas').value;
@@ -755,17 +774,33 @@ function renderChartRekap() {
     if (!idKelas || !ctx) return;
 
     // Ambil khusus data UH untuk kelas ini
-    const allUH = globalRekapCache.tugasUh.filter(item => String(item.jenis).toUpperCase() === 'UH' && String(item.id_kelas) === String(idKelas));
+    const allUH = globalRekapCache.tugasUh.filter(item => 
+        String(item.jenis).toUpperCase() === 'UH' && 
+        String(item.id_kelas) === String(idKelas)
+    );
     
-    // Sumbu X: Nomor Absen
-    const labelsAbsen = globalStudents.map((_, i) => i + 1);
+    if (allUH.length === 0) return;
+
+    // AMAN: Jika globalStudents belum ter-load, gunakan data siswa dari rekap
+    let listSiswa = globalStudents;
+    if (!listSiswa || listSiswa.length === 0) {
+        // Ambil daftar id_siswa unik yang ada di rekap kelas ini
+        const setSiswa = Array.from(new Set(allUH.map(u => u.id_siswa)));
+        listSiswa = setSiswa.map(id => ({ id_siswa: id, nama_siswa: id }));
+    }
+
+    // Sumbu X: Nomor Absen (1, 2, 3...)
+    const labelsAbsen = listSiswa.map((_, i) => i + 1);
     const uhList = Array.from(new Set(allUH.map(item => item.nama_penilaian))).sort();
 
     // Buat garisnya (dataset)
     const datasets = uhList.map((uhName, index) => {
-        const dataPoints = globalStudents.map(siswa => {
-            const record = allUH.find(item => item.nama_penilaian === uhName && String(item.id_siswa) === String(siswa.id_siswa));
-            return (record && record.nilai !== undefined && record.nilai !== "") ? Number(record.nilai) : null;
+        const dataPoints = listSiswa.map(siswa => {
+            const record = allUH.find(item => 
+                item.nama_penilaian === uhName && 
+                String(item.id_siswa) === String(siswa.id_siswa)
+            );
+            return (record && record.nilai !== undefined && record.nilai !== "" && record.nilai !== null) ? Number(record.nilai) : null;
         });
 
         return {
@@ -773,8 +808,8 @@ function renderChartRekap() {
             data: dataPoints,
             borderColor: chartColors[index % chartColors.length],
             backgroundColor: chartColors[index % chartColors.length],
-            tension: 0.3, // Bikin garisnya melengkung mulus
-            spanGaps: true // Tetap nyambung kalau ada anak yang bolos UH
+            tension: 0.3,
+            spanGaps: true
         };
     });
 
@@ -788,18 +823,14 @@ function renderChartRekap() {
             plugins: {
                 tooltip: {
                     callbacks: {
-                        // Sihir: Munculin nama siswa saat titik disentuh!
                         title: function(context) {
                             const idx = context[0].dataIndex;
-                            return `Absen ${idx + 1}: ${globalStudents[idx].nama_siswa}`;
+                            const s = listSiswa[idx];
+                            return `Absen ${idx + 1}: ${s ? (s.nama_siswa || s.id_siswa) : ''}`;
                         }
                     }
                 }
             }
         }
     });
-}
-    // Download File .xlsx
-    const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, fileName);
 }
