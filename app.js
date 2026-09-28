@@ -7,6 +7,9 @@ let globalStudents = []; // Menyimpan data siswa kelas aktif
 let presensiState = {};  // Menyimpan status H/S/I/A
 let globalRekapCache = null; // Menyimpan data rekap sementara untuk fitur Edit
 let currentEditingJurnalId = null; // KTP untuk mengingat ID Jurnal saat mode Edit
+let chartBerandaInstance = null;
+let chartRekapInstance = null;
+const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']; // Palet warna grafik
 
 // ==========================================
 // UI HELPERS
@@ -528,6 +531,7 @@ async function submitPenilaian() {
 window.onload = () => {
     setLiveDate();
     loadKelas();
+    loadDashboardChart();
 };
 // ==========================================
 // FUNGSI REKAP LENGKAP & EXPORT EXCEL
@@ -654,7 +658,7 @@ async function loadRekapData() {
                 rowHtml += `</tr>`;
                 tbodyTugaUh.innerHTML += rowHtml;
             });
-
+                renderChartRekap();
         }
     } catch (e) {
         alert("Gagal memuat data rekap.");
@@ -685,6 +689,116 @@ function exportToExcel() {
     const wsTugas = XLSX.utils.table_to_sheet(document.getElementById('table-tugauh-export'));
     XLSX.utils.book_append_sheet(wb, wsTugas, "Tugas & UH");
 
+// ==========================================
+// FUNGSI GRAFIK (CHART.JS)
+// ==========================================
+async function loadDashboardChart() {
+    try {
+        // Ambil data rekap untuk beranda (saat aplikasi baru dibuka)
+        const res = await fetch(`${GAS_URL}?action=getRekap`);
+        const json = await res.json();
+        if(json.status === "success") {
+            globalRekapCache = json.data;
+            renderChartBeranda();
+        }
+    } catch(e) {
+        console.log("Gagal memuat data grafik beranda");
+    }
+}
+
+function renderChartBeranda() {
+    if (!globalRekapCache || !globalRekapCache.tugasUh) return;
+    const ctx = document.getElementById('berandaChart');
+    if (!ctx) return;
+
+    // Ambil khusus data UH
+    const allUH = globalRekapCache.tugasUh.filter(item => String(item.jenis).toUpperCase() === 'UH');
+    
+    // Ambil daftar kelas & nama UH yang unik
+    const kelasList = Array.from(new Set(allUH.map(item => item.id_kelas))).sort();
+    const uhList = Array.from(new Set(allUH.map(item => item.nama_penilaian))).sort();
+
+    // Buat batangnya (dataset)
+    const datasets = uhList.map((uhName, index) => {
+        const dataRataRata = kelasList.map(idKelas => {
+            const scores = allUH.filter(item => item.nama_penilaian === uhName && item.id_kelas === idKelas);
+            let sum = 0, count = 0;
+            scores.forEach(s => {
+                if (s.nilai !== undefined && s.nilai !== null && s.nilai !== "") {
+                    sum += Number(s.nilai);
+                    count++;
+                }
+            });
+            return count > 0 ? (sum / count).toFixed(1) : 0;
+        });
+
+        return {
+            label: uhName,
+            data: dataRataRata,
+            backgroundColor: chartColors[index % chartColors.length],
+            borderRadius: 4
+        };
+    });
+
+    if (chartBerandaInstance) chartBerandaInstance.destroy();
+    chartBerandaInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: kelasList, datasets: datasets },
+        options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+    });
+}
+
+function renderChartRekap() {
+    if (!globalRekapCache || !globalRekapCache.tugasUh) return;
+    const idKelas = document.getElementById('global-kelas').value;
+    const ctx = document.getElementById('rekapChart');
+    if (!idKelas || !ctx) return;
+
+    // Ambil khusus data UH untuk kelas ini
+    const allUH = globalRekapCache.tugasUh.filter(item => String(item.jenis).toUpperCase() === 'UH' && String(item.id_kelas) === String(idKelas));
+    
+    // Sumbu X: Nomor Absen
+    const labelsAbsen = globalStudents.map((_, i) => i + 1);
+    const uhList = Array.from(new Set(allUH.map(item => item.nama_penilaian))).sort();
+
+    // Buat garisnya (dataset)
+    const datasets = uhList.map((uhName, index) => {
+        const dataPoints = globalStudents.map(siswa => {
+            const record = allUH.find(item => item.nama_penilaian === uhName && String(item.id_siswa) === String(siswa.id_siswa));
+            return (record && record.nilai !== undefined && record.nilai !== "") ? Number(record.nilai) : null;
+        });
+
+        return {
+            label: uhName,
+            data: dataPoints,
+            borderColor: chartColors[index % chartColors.length],
+            backgroundColor: chartColors[index % chartColors.length],
+            tension: 0.3, // Bikin garisnya melengkung mulus
+            spanGaps: true // Tetap nyambung kalau ada anak yang bolos UH
+        };
+    });
+
+    if (chartRekapInstance) chartRekapInstance.destroy();
+    chartRekapInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: labelsAbsen, datasets: datasets },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 100 } },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        // Sihir: Munculin nama siswa saat titik disentuh!
+                        title: function(context) {
+                            const idx = context[0].dataIndex;
+                            return `Absen ${idx + 1}: ${globalStudents[idx].nama_siswa}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
     // Download File .xlsx
     const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
