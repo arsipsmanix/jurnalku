@@ -690,6 +690,10 @@ function exportToExcel() {
     // 4. Sheet Tugas & UH
     const wsTugas = XLSX.utils.table_to_sheet(document.getElementById('table-tugauh-export'));
     XLSX.utils.book_append_sheet(wb, wsTugas, "Tugas & UH");
+    // Download File .xlsx
+    const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+}
 
 // ==========================================
 // FUNGSI GRAFIK (CHART.JS)
@@ -765,10 +769,6 @@ function renderChartBeranda() {
         }
     });
 }
-// Download File .xlsx
-    const fileName = `Rekap_Jurnalku_${idKelas}_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-}
 
 //Render ChartRekap
 function renderChartRekap() {
@@ -837,18 +837,4 @@ function renderChartRekap() {
             }
         }
     });
-}
-
-async function loadDashboardChart() {
-    try {
-        // Ambil data rekap untuk beranda (saat aplikasi baru dibuka)
-        const res = await fetch(`${GAS_URL}?action=getRekap`);
-        const json = await res.json();
-        if(json.status === "success") {
-            globalRekapCache = json.data;
-            renderChartBeranda();
-        }
-    } catch(e) {
-        console.log("Gagal memuat data grafik beranda", e);
-    }
 }
