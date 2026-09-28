@@ -838,3 +838,17 @@ function renderChartRekap() {
         }
     });
 }
+
+async function loadDashboardChart() {
+    try {
+        // Ambil data rekap untuk beranda (saat aplikasi baru dibuka)
+        const res = await fetch(`${GAS_URL}?action=getRekap`);
+        const json = await res.json();
+        if(json.status === "success") {
+            globalRekapCache = json.data;
+            renderChartBeranda();
+        }
+    } catch(e) {
+        console.log("Gagal memuat data grafik beranda", e);
+    }
+}
