@@ -713,11 +713,10 @@ function renderChartBeranda() {
     const ctx = document.getElementById('berandaChart');
     if (!ctx) return;
 
-    // Ambil khusus data UH (Aman untuk tulisan 'UH' maupun 'Ulangan Harian')
+    // Filter murni yang jenisnya 'UH'
     const allUH = globalRekapCache.tugasUh.filter(item => {
         if (!item.jenis) return false;
-        const j = String(item.jenis).trim().toUpperCase();
-        return j === 'UH' || j.includes('ULANGAN');
+        return String(item.jenis).trim().toUpperCase() === 'UH';
     });
 
     if (allUH.length === 0) return;
@@ -733,6 +732,7 @@ function renderChartBeranda() {
                 item.nama_penilaian === uhName && 
                 String(item.id_kelas) === String(idKelas)
             );
+            
             let sum = 0, count = 0;
             scores.forEach(s => {
                 if (s.nilai !== undefined && s.nilai !== null && s.nilai !== "") {
@@ -740,7 +740,9 @@ function renderChartBeranda() {
                     count++;
                 }
             });
-            return count > 0 ? (sum / count).toFixed(1) : 0;
+            
+            // WAJIB DIJADIKAN NUMBER AGAR CHART.JS BISA MEMBACA!
+            return count > 0 ? Number((sum / count).toFixed(1)) : 0;
         });
 
         return {
@@ -752,11 +754,13 @@ function renderChartBeranda() {
     });
 
     if (chartBerandaInstance) chartBerandaInstance.destroy();
+    
     chartBerandaInstance = new Chart(ctx, {
         type: 'bar',
         data: { labels: kelasList, datasets: datasets },
         options: { 
             responsive: true, 
+            maintainAspectRatio: false, // Memaksa grafik mengisi penuh wadah 300px
             scales: { y: { beginAtZero: true, max: 100 } } 
         }
     });
