@@ -233,7 +233,7 @@ function checkExistingPenilaian() {
 
     if (!jenis || !judul) return;
 
-    // Filter data rekap tugasUh yang cocok dengan Kelas, Jenis, dan Judul Penilaian
+    // Filter data rekap tugasUh yang cocok
     const existingNilaiList = globalRekapCache.tugasUh.filter(item => 
         String(item.id_kelas) === String(idKelas) &&
         String(item.jenis).toLowerCase() === String(jenis).toLowerCase() &&
@@ -241,19 +241,57 @@ function checkExistingPenilaian() {
     );
 
     if (existingNilaiList.length > 0) {
-        // Jika sudah ada data nilai sebelumnya, masukkan ke kotak input masing-masing siswa
-        existingNilaiList.forEach(item => {
-            // Asumsi ID elemen input nilai siswa di renderPenilaian() berbentuk: input-nilai-[id_siswa] atau nilai-[id_siswa]
-            // Silakan sesuaikan string "input-nilai-" ini dengan yang dipakai di fungsi renderPenilaian() Bapak
-            const inputNilai = document.getElementById('input-nilai-' + item.id_siswa) || document.getElementById('nilai-' + item.id_siswa);
-            const inputKet = document.getElementById('input-ket-' + item.id_siswa) || document.getElementById('ket-' + item.id_siswa);
+        // --- LANGKAH B: OTOMATIS SET KALENDER KE TANGGAL LAMA ---
+        if (existingNilaiList[0].tanggal) {
+            const d = new Date(existingNilaiList[0].tanggal);
+            const tglString = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            const dateInput = document.getElementById('penilaian-tanggal');
+            if (dateInput) {
+                dateInput.value = tglString;
+            }
+        }
 
-            if (inputNilai) inputNilai.value = item.nilai !== undefined ? item.nilai : "";
-            if (inputKet) inputKet.value = item.keterangan || "";
+        // Masukkan data nilai lama ke input siswa dan atur status kotak
+        existingNilaiList.forEach(item => {
+            const inputNilai = document.getElementById('nilai-' + item.id_siswa);
+            const checkBelum = document.getElementById('check-belum-' + item.id_siswa);
+
+            if (inputNilai) {
+                if (item.keterangan && item.keterangan.includes('Belum')) {
+                    // Kalau aslinya "Belum", centang kotaknya dan kunci
+                    if (checkBelum) checkBelum.checked = true;
+                    inputNilai.value = 0;
+                    inputNilai.disabled = true;
+                    inputNilai.classList.add('bg-gray-100', 'text-gray-400');
+                } else {
+                    // Kalau ada nilainya, lepas centangnya dan buka kunciannya
+                    if (checkBelum) checkBelum.checked = false;
+                    inputNilai.value = (item.nilai !== undefined && item.nilai !== null) ? item.nilai : "";
+                    inputNilai.disabled = false;
+                    inputNilai.classList.remove('bg-gray-100', 'text-gray-400');
+                }
+            }
+        });
+    } else {
+        // --- JIKA TUGAS BARU: KEMBALIKAN KE TANGGAL HARI INI ---
+        const dateInput = document.getElementById('penilaian-tanggal');
+        if (dateInput) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+        
+        // Bersihkan semua kotak nilai karena ini tugas baru
+        globalStudents.forEach(siswa => {
+            const inputNilai = document.getElementById('nilai-' + siswa.id_siswa);
+            const checkBelum = document.getElementById('check-belum-' + siswa.id_siswa);
+            if (inputNilai) {
+                inputNilai.value = "";
+                inputNilai.disabled = false;
+                inputNilai.classList.remove('bg-gray-100', 'text-gray-400');
+            }
+            if (checkBelum) checkBelum.checked = false;
         });
     }
 }
-
 // ==========================================
 // FUNGSI RENDER FORM (UPDATE ADA TAMBAHAN 'R')
 // ==========================================
