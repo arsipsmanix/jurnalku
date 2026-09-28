@@ -431,44 +431,61 @@ async function submitPenilaian() {
     const idKelas = document.getElementById('global-kelas').value;
     if(!idKelas) return alert("Pilih kelas dulu!");
 
-    const jenis = document.getElementById('penilaian-jenis').value; // TUGAS / UH
+    const tanggalPenilaian = document.getElementById('penilaian-tanggal').value;
+    if(!tanggalPenilaian) return alert("Pilih tanggal penilaian dulu!");
+
+    const jenis = document.getElementById('penilaian-jenis').value; 
+    const judul = document.getElementById('penilaian-judul').value.trim();
+    if(!judul) return alert("Isi judul tugas / UH dulu!");
+
     const arrNilai = [];
     
     globalStudents.forEach(siswa => {
-        const isBelum = document.getElementById(`check-belum-${siswa.id_siswa}`).checked;
-        const nilaiInput = document.getElementById(`nilai-${siswa.id_siswa}`).value;
+        const checkBelum = document.getElementById(`check-belum-${siswa.id_siswa}`);
+        const inputNilai = document.getElementById(`nilai-${siswa.id_siswa}`);
+        
+        const isBelum = checkBelum ? checkBelum.checked : false;
+        const valStr = inputNilai ? inputNilai.value.trim() : "";
 
+        // Logika bungkus nilai (susulan tidak akan kelewatan lagi)
         if (isBelum) {
             arrNilai.push({ 
                 id_siswa: siswa.id_siswa, 
                 nilai: 0, 
                 keterangan: jenis === 'TUGAS' ? 'Belum Mengumpulkan' : 'Belum Ulangan' 
             });
-        } else if (nilaiInput !== "") {
+        } else if (valStr !== "") {
             arrNilai.push({ 
                 id_siswa: siswa.id_siswa, 
-                nilai: parseInt(nilaiInput),
+                nilai: parseInt(valStr, 10),
                 keterangan: 'Lengkap'
             });
         }
     });
 
-    if(arrNilai.length === 0) return alert("Belum ada nilai atau centangan yang diisi!");
+    if(arrNilai.length === 0) return alert("Belum ada nilai yang diisi!");
 
     const payload = {
         action: "savePenilaian",
-        tanggal: new Date().toISOString().split('T')[0],
+        tanggal: tanggalPenilaian, // Murni ambil dari kotak kalender yang Bapak pilih!
         id_kelas: idKelas,
         jenis: jenis,
-        nama_penilaian: document.getElementById('penilaian-judul').value,
+        nama_penilaian: judul,
         data_nilai: arrNilai
     };
 
-    showLoading(true);
-    await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
-    showLoading(false);
-    alert(`Data Penilaian ${jenis} berhasil disimpan!`);
+    try {
+        showLoading(true);
+        await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
+        showLoading(false);
+        alert(`Data Penilaian ${jenis} berhasil disimpan!`);
+        fetchRekapForEdit(idKelas); // Refresh rekap otomatis
+    } catch(e) {
+        showLoading(false);
+        alert("Gagal menyimpan penilaian: " + e);
+    }
 }
+
 // Inisialisasi awal
 window.onload = () => {
     setLiveDate();
